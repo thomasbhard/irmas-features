@@ -4,6 +4,7 @@ Plotting correlation matrix, using pca, and classifing using a simple NN.
 """
 
 import os
+import csv
 
 import numpy as np 
 import pandas as pd 
@@ -19,7 +20,8 @@ from keras.utils import np_utils
 from visualisation import corrplot
 
 
-PLOT = False
+PLOT = True
+TRAIN = False
 TRAIN_ON_PCA = False
 
 # read features
@@ -28,13 +30,30 @@ columns = ['MFCC1', 'MFCC2', 'MFCC3', 'MFCC4', 'MFCC5', 'MFCC6', 'MFCC7', 'MFCC8
 df = pd.read_csv(os.path.join(os.path.abspath(__file__), '..', '..', 'tables', feature_table), header=None, names=columns)
 print(df.head())
 
+corr = df.iloc[:,:13].corr()
+
 if PLOT:
     # plot correlation matrix
-    corr = df.iloc[:,:13].corr()
     plt.figure(figsize=(10, 10))
     corrplot(corr)
 
     plt.show()
+
+if PLOT:
+    # plot spring map
+    corr_mean = 0.2
+    corr_file = os.path.join(os.path.abspath(__file__), '..', '..', 'tables', 'correlations.csv')
+    with open(corr_file, mode='w') as corr_file:
+        writer = csv.writer(corr_file, delimiter=',')
+        writer.writerow(['Source', 'Target', 'Weight'])
+        cnt = 0
+        for i in range(len(columns[0:-1]) - 1):
+            for j in range(i+1, len(columns[0:-1])):
+                curr_corr = corr.iloc[i,j]
+                curr_corr = abs(curr_corr)
+                if curr_corr > corr_mean:
+                    writer.writerow([columns[i], columns[j], curr_corr])
+                    cnt += 1
 
 
 # Scale
@@ -89,15 +108,16 @@ model.add(Dense(2, activation='sigmoid'))
 
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-history = model.fit(x_train, y_train, batch_size=32, epochs=10, validation_split=0.2, verbose=1)
+if TRAIN:
+    history = model.fit(x_train, y_train, batch_size=32, epochs=10, validation_split=0.2, verbose=1)
 
-# Evaluation
-plt.plot(history.epoch, history.history['loss'])
-plt.show()
+    # Evaluation
+    plt.plot(history.epoch, history.history['loss'])
+    plt.show()
 
-y_pred = model.predict(x_test)
-y_pred = np.argmax(y_pred, axis=1)
-score = accuracy_score(y_test, y_pred)
+    y_pred = model.predict(x_test)
+    y_pred = np.argmax(y_pred, axis=1)
+    score = accuracy_score(y_test, y_pred)
 
-print('Score using principal components: ' + str(score))
+    print('Score using principal components: ' + str(score))
 

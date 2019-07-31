@@ -1,0 +1,132 @@
+<html>
+<head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.css" type="text/css" />
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis-network.min.js"> </script>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+
+<style type="text/css">
+
+        #mynetwork {
+            width: 100%;
+            height: 750px;
+            background-color: #222222;
+            border: 1px solid lightgray;
+            position: relative;
+            float: left;
+        }
+
+        
+
+        
+        #config {
+            float: left;
+            width: 400px;
+            height: 600px;
+        }
+        
+
+        
+</style>
+
+</head>
+
+<body>
+<div id = "mynetwork"></div>
+
+
+<div id = "config"></div>
+
+<script type="text/javascript">
+
+    // initialize global variables.
+    var edges;
+    var nodes;
+    var network; 
+    var container;
+    var options, data;
+
+    
+    // This method is responsible for drawing the graph, returns the drawn network
+    function drawGraph() {
+        var container = document.getElementById('mynetwork');
+        
+        
+
+        // parsing and collecting nodes and edges from the python
+        nodes = new vis.DataSet([{"font": {"color": "white"}, "id": "MFCC1", "label": "MFCC1", "shape": "dot", "title": "MFCC1 Neighbors:\u003cbr\u003eMFCC7\u003cbr\u003eMFCC3", "value": 2}, {"font": {"color": "white"}, "id": "MFCC3", "label": "MFCC3", "shape": "dot", "title": "MFCC3 Neighbors:\u003cbr\u003eMFCC1", "value": 1}, {"font": {"color": "white"}, "id": "MFCC7", "label": "MFCC7", "shape": "dot", "title": "MFCC7 Neighbors:\u003cbr\u003eMFCC1\u003cbr\u003eMFCC9\u003cbr\u003eMFCC10", "value": 3}, {"font": {"color": "white"}, "id": "MFCC2", "label": "MFCC2", "shape": "dot", "title": "MFCC2 Neighbors:\u003cbr\u003eMFCC8\u003cbr\u003eMFCC6\u003cbr\u003eMFCC10\u003cbr\u003eMFCC4\u003cbr\u003eMFCC12", "value": 5}, {"font": {"color": "white"}, "id": "MFCC4", "label": "MFCC4", "shape": "dot", "title": "MFCC4 Neighbors:\u003cbr\u003eMFCC6\u003cbr\u003eMFCC2\u003cbr\u003eMFCC8", "value": 3}, {"font": {"color": "white"}, "id": "MFCC6", "label": "MFCC6", "shape": "dot", "title": "MFCC6 Neighbors:\u003cbr\u003eMFCC9\u003cbr\u003eMFCC2\u003cbr\u003eMFCC10\u003cbr\u003eMFCC4\u003cbr\u003eMFCC8", "value": 5}, {"font": {"color": "white"}, "id": "MFCC8", "label": "MFCC8", "shape": "dot", "title": "MFCC8 Neighbors:\u003cbr\u003eMFCC10\u003cbr\u003eMFCC4\u003cbr\u003eMFCC6\u003cbr\u003eMFCC2", "value": 4}, {"font": {"color": "white"}, "id": "MFCC10", "label": "MFCC10", "shape": "dot", "title": "MFCC10 Neighbors:\u003cbr\u003eMFCC13\u003cbr\u003eMFCC7\u003cbr\u003eMFCC8\u003cbr\u003eMFCC2\u003cbr\u003eMFCC6\u003cbr\u003eMFCC12", "value": 6}, {"font": {"color": "white"}, "id": "MFCC12", "label": "MFCC12", "shape": "dot", "title": "MFCC12 Neighbors:\u003cbr\u003eMFCC10\u003cbr\u003eMFCC9\u003cbr\u003eMFCC2", "value": 3}, {"font": {"color": "white"}, "id": "MFCC9", "label": "MFCC9", "shape": "dot", "title": "MFCC9 Neighbors:\u003cbr\u003eMFCC6\u003cbr\u003eMFCC7\u003cbr\u003eMFCC11\u003cbr\u003eMFCC12", "value": 4}, {"font": {"color": "white"}, "id": "MFCC11", "label": "MFCC11", "shape": "dot", "title": "MFCC11 Neighbors:\u003cbr\u003eMFCC9\u003cbr\u003eMFCC13", "value": 2}, {"font": {"color": "white"}, "id": "MFCC13", "label": "MFCC13", "shape": "dot", "title": "MFCC13 Neighbors:\u003cbr\u003eMFCC10\u003cbr\u003eMFCC11", "value": 2}]);
+        edges = new vis.DataSet([{"from": "MFCC1", "to": "MFCC3", "value": 0.06421767585120333}, {"from": "MFCC1", "to": "MFCC7", "value": 0.04432351056411146}, {"from": "MFCC2", "to": "MFCC4", "value": 0.10404114345810947}, {"from": "MFCC2", "to": "MFCC6", "value": 0.10467556367158759}, {"from": "MFCC2", "to": "MFCC8", "value": 0.10312614787470331}, {"from": "MFCC2", "to": "MFCC10", "value": 0.07704102094833998}, {"from": "MFCC2", "to": "MFCC12", "value": 0.051504304704920324}, {"from": "MFCC4", "to": "MFCC6", "value": 0.10228261184896395}, {"from": "MFCC4", "to": "MFCC8", "value": 0.08140616519145225}, {"from": "MFCC6", "to": "MFCC8", "value": 0.10425218596819785}, {"from": "MFCC6", "to": "MFCC9", "value": 0.04873159728552774}, {"from": "MFCC6", "to": "MFCC10", "value": 0.06280343560462885}, {"from": "MFCC7", "to": "MFCC9", "value": 0.06726880484290898}, {"from": "MFCC7", "to": "MFCC10", "value": 0.04184767993060898}, {"from": "MFCC8", "to": "MFCC10", "value": 0.07990006315935091}, {"from": "MFCC9", "to": "MFCC11", "value": 0.06647668099632886}, {"from": "MFCC9", "to": "MFCC12", "value": 0.0572508397894549}, {"from": "MFCC10", "to": "MFCC12", "value": 0.08781133788705092}, {"from": "MFCC10", "to": "MFCC13", "value": 0.06051220631502097}, {"from": "MFCC11", "to": "MFCC13", "value": 0.06628894022096685}]);
+
+        // adding nodes and edges to the graph
+        data = {nodes: nodes, edges: edges};
+
+        var options = {
+    "configure": {
+        "enabled": true,
+        "filter": [
+            "physics"
+        ]
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": false,
+            "type": "continuous"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "barnesHut": {
+            "avoidOverlap": 0,
+            "centralGravity": 0.3,
+            "damping": 0.09,
+            "gravitationalConstant": -80000,
+            "springConstant": 0.001,
+            "springLength": 250
+        },
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+        
+        
+
+        // default to using dot shape for nodes
+        options.nodes = {
+            shape: "dot"
+        }
+        
+        // if this network requires displaying the configure window,
+        // put it in its div
+        options.configure["container"] = document.getElementById("config");
+        
+
+        network = new vis.Network(container, data, options);
+
+        
+
+
+        
+
+        return network;
+
+    }
+
+    drawGraph();
+
+</script>
+</body>
+</html>
