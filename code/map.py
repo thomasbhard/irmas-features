@@ -1,3 +1,13 @@
+"""Generating network from csv file
+
+CSV file has to be structured like this:
+
+Source, Target, Weight
+
+Output is an html file which can be displayed in the browser
+
+"""
+
 import os
 
 from pyvis.network import Network

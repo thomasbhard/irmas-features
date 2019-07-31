@@ -1,5 +1,7 @@
-# COPIED FROM GITHUB
+""" COPIED FROM GITHUB
 
+Plotting heatmap of the correlation of the features
+"""
 
 from matplotlib import pyplot as plt
 import pandas as pd
