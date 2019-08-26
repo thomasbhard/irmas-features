@@ -1,3 +1,5 @@
 features-env/
 audio/
 tables/
+.vscode/
+/bakk.code-workspace

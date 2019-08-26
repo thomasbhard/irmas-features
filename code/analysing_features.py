@@ -15,8 +15,11 @@ feature_table = 'testfeatures.csv'
 df = pd.read_csv(os.path.join(os.path.abspath(__file__), '..', '..', 'tables', feature_table), index_col=0)
 print(df.head())
 
+X = df.iloc[:,:-1]
+print(X.std())
+
 def plot_corr_matrix():
-    corr = df.iloc[:,:15].corr()
+    corr = df.iloc[:,:-1].corr()
 
     plt.figure(figsize=(10, 10))
     corrplot(corr)
@@ -24,12 +27,12 @@ def plot_corr_matrix():
     plt.show()
 
 def significane_test():
-    X = df.iloc[:,:15]
+    X = df.iloc[:,:-1]
     dummy = np.random.rand(len(df.index))
     X['dummy'] = dummy
 
 
-    y = df.iloc[:,15]
+    y = df.iloc[:,-1]
 
     le = LabelEncoder()
     le.fit(['cel', 'cla', 'flu', 'gac', 'gel', 'org', 'pia', 'sax', 'tru', 'vio'])
@@ -46,6 +49,8 @@ def significane_test():
 
 
 if __name__ == "__main__":
-    significane_test()
+    pass
+    # plot_corr_matrix()
+    # significane_test()
 
 

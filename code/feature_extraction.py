@@ -2,7 +2,9 @@ import os
 
 import numpy as np
 import pandas as pd
+import scipy.stats
 import scipy.io.wavfile as wav
+from sklearn.preprocessing import StandardScaler
 from python_speech_features import mfcc
 from python_speech_features.sigproc import framesig
 
@@ -41,7 +43,7 @@ ouputfile = os.path.join(os.path.abspath(__file__), '..', '..', 'tables', 'testf
 
 # Features
 
-feature_names = ['MFCC1', 'MFCC2', 'MFCC3', 'MFCC4', 'MFCC5', 'MFCC6', 'MFCC7', 'MFCC8', 'MFCC9', 'MFCC10', 'MFCC11', 'MFCC12', 'MFCC13', 'Mean', 'Median']
+feature_names = ['MFCC1', 'MFCC2', 'MFCC3', 'MFCC4', 'MFCC5', 'MFCC6', 'MFCC7', 'MFCC8', 'MFCC9', 'MFCC10', 'MFCC11', 'MFCC12', 'MFCC13', 'Mean', 'Median', 'stdDeviation', 'q25', 'q75', 'iqr', 'skewness', 'kurtosis']
 
 # ---------------------------------------------------------------------------------------------
 
@@ -60,8 +62,27 @@ def extract_features_window(s):
     features = mfcc_features
 
     # Stat
-    features = np.append(features, np.mean(s))
-    features = np.append(features, np.mean(s))
+    mean = np.mean(s)
+    features = np.append(features, mean)
+
+    median = np.median(s)
+    features = np.append(features, median)
+
+    stdDeviation = np.std(s)
+    features = np.append(features, stdDeviation)
+
+    q25, q75 = np.percentile(s, [25, 75])
+    features = np.append(features, q25)
+    features = np.append(features, q75)
+
+    iqr = q75 - q25
+    features = np.append(features, iqr)
+
+    skewness = scipy.stats.skew(s)
+    features = np.append(features, skewness)
+
+    kurtosis = scipy.stats.kurtosis(s)
+    features = np.append(features, kurtosis)
 
     return features
 
@@ -126,8 +147,11 @@ def create_dataframe():
         progress += 1
         printProgressBar(progress, num_files, prefix='Progress', suffix='Complete', length=50)
 
+    # scale data
+    features_scaled = StandardScaler().fit_transform(features)
+    
 
-    df = pd.DataFrame(features)
+    df = pd.DataFrame(features_scaled)
     df.columns = feature_names
 
     df['Label'] = labels
