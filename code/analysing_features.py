@@ -16,7 +16,7 @@ df = pd.read_csv(os.path.join(os.path.abspath(__file__), '..', '..', 'tables', f
 print(df.head())
 
 X = df.iloc[:,:-1]
-print(X.std())
+
 
 def plot_corr_matrix():
     corr = df.iloc[:,:-1].corr()
@@ -49,8 +49,8 @@ def significane_test():
 
 
 if __name__ == "__main__":
-    pass
-    # plot_corr_matrix()
-    # significane_test()
+    
+    #plot_corr_matrix()
+    significane_test()
 
 

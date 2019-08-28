@@ -1,6 +1,10 @@
 """Analysing features and comparing classification results
 
 Plotting correlation matrix, using pca, and classifing using a simple NN.
+
+This script was used to explore the IRMAS Dataset and to try out different methods 
+for visualizing and classifying. This is now split into feature_extraction 
+and analysing_features.
 """
 
 import os
