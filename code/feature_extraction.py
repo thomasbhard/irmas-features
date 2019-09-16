@@ -1,16 +1,19 @@
 import os
+import time
 
 import numpy as np
 import pandas as pd
 import scipy.stats
 import scipy.io.wavfile as wav
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, LabelEncoder
+from keras.utils.np_utils import to_categorical
 from python_speech_features import mfcc
 from python_speech_features.sigproc import framesig
 
 from utils import calculate_nfft, get_files, get_label, printProgressBar
 
 
+times = []
 
 # Global Variables
 IRMAS_PATH = 'C:\\Users\\thoma\\Documents\\_STUDIUM\\5. Semester\\Fachvertiefung Software\\IRMAS-TrainingData'
@@ -30,7 +33,9 @@ NFFT = calculate_nfft(SAMPLERATE, winlen=WINLEN)
 # Files
 
 instruments = ['cel', 'cla', 'flu', 'gac', 'gel', 'org', 'pia', 'sax', 'tru', 'vio']
-num_files_per_inst = 3 # if none, all existing files are taken
+label_encoder = LabelEncoder()
+label_encoder.fit(instruments)
+num_files_per_inst = 10 # if none, all existing files are taken
 
 filenames = []
 
@@ -56,6 +61,8 @@ def extract_features_window(s):
     """
 
     assert np.shape(s)[0] == WINLEN_SAMP
+
+    t = time.time()
 
     # MFCC 
     mfcc_features = mfcc(s, samplerate=SAMPLERATE, winlen=WINLEN, winstep=WINSTEP, nfft=NFFT)
@@ -83,6 +90,12 @@ def extract_features_window(s):
 
     kurtosis = scipy.stats.kurtosis(s)
     features = np.append(features, kurtosis)
+
+    dur = time.time() - t
+
+    times.append(dur)
+
+
 
     return features
 
@@ -118,6 +131,12 @@ def extract_features_file(filename):
 
 
 def create_dataframe():
+    """Creates a dataframe with the specified features 
+
+    The specified features are extracted from the specified files and scaled using the StandardScaler.
+
+    :return: pandas dataframe with the corresponding label as the last column
+    """
 
     features = None
     labels = None
@@ -162,14 +181,101 @@ def create_dataframe():
 
 
 
+def get_slices(slice_len=512):
+    """Slice audiofiles into slices of size 'slice_len'
+
+    In addition to slicing, each slice is normalized between -1 and 1.
+
+    :param slice_len: number of samples of one slice
+    
+    :return: returns a tuple containg:
+                -a 2-D array with the shape (slice_len, num_slices) 
+                 where num_slices is defined by slice_len and the number of files specified in the 
+                 global variables section
+                -a 2-D array with the shape (num_labels, num_slices) containg one-hot-encoded labels
+    """
+
+    
+    features = None
+    labels = None
+
+    num_files = len(filenames)
+    progress = 0
+
+    printProgressBar(progress, num_files, prefix='Progress', suffix='Complete', length=50)
+
+    for f in filenames:
+
+        # read file
+        _, data = wav.read(f)
+        data = data[:,0]
+
+        num_slices = len(data) // slice_len
+        assert num_slices > 0, 'slice_len is to big'
+        num_samples = num_slices * slice_len
+
+        new_features = np.array(np.split(data[:num_samples], num_slices), dtype=np.float32)
+        
+
+        if features is None:
+            features = new_features
+        else:
+            features = np.vstack((features, new_features))
+
+        label = get_label(f)
+        num_labels = np.shape(new_features)[0]
+        new_labels = np.repeat(label, num_labels)
+
+        if labels is None:
+            labels = new_labels
+        else:
+            labels = np.append(labels, new_labels)
+
+        progress += 1
+        printProgressBar(progress, num_files, prefix='Progress', suffix='Complete', length=50)
+
+    for feature in features:
+        feature /= np.max(np.abs(feature))
+
+    return features, labels
+
+
+def create_dataframe_slices(slice_len=256):
+    """Create a dateframe with features from the get_slices function.
+
+    In addtion to extracting the features, the labels are one hot encoded using
+    the label encoder and to_categorical from keras utils.
+
+    :param slice_len: number of samples in one slice
+    :return: pandas dataframe with featues and labels 
+    """
+
+    features, labels = get_slices(slice_len=slice_len)
+
+    labels_enc = label_encoder.transform(labels)
+    labels_one_hot = to_categorical(labels_enc)
+
+    df_features = pd.DataFrame(features)
+    df_features.columns = ['Sample ' + str(i) for i in range(slice_len)]
+
+    df_labels = pd.DataFrame(labels_one_hot)
+    df_labels.columns = instruments
+
+    assert len(df_features.index) == len(df_labels.index)
+
+    df = pd.concat([df_features, df_labels], axis=1, join='inner')
+    
+    return df
 
 
 if __name__ == "__main__":
+    # example usage feature extraction
+    df_features = create_dataframe()
+    df_features.to_csv(outputfile)
 
-    df = create_dataframe()
-    df.to_csv(ouputfile)
-    
+    #example usage slicing
+    df_slices = create_dataframe_slices(slice_len=1024)
+    df_slices.to_csv(outputfile)
 
 
 
-    
