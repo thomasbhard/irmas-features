@@ -1,5 +1,6 @@
 import os
 import glob
+import random
 
 
 def calculate_nfft(samplerate, winlen=0.025):
@@ -19,12 +20,15 @@ def calculate_nfft(samplerate, winlen=0.025):
     return nfft
 
 
-def get_files(path, inst='gel', filt='', num=None):
+def get_files(path, inst='gel', filt='', ignore=[], rand=False, num=None):
     """Get IRMAS data for specific instrument
 
     :param path: path to the IRMAS Dataset
     :param inst: specifies the instrument (cel, cla, flu, gac, gel, org, pia, sax, tru, vio, voi)
-    :param filt: optinal parameter for filtering additional tags e.g. genre
+    :param filt: optinal parameter for filtering additional tags e.g. genre NOTE: returns files that INCLUDE the filt string!
+    :param ignore: optional parameter for ignoring certain files, list of string to ignore:
+        e.g. ['jaz_blu', 'pop_roc'] for ignoring these genres
+    :param rand: optional parameter to shuffle files before limiting
     :param num: optinal parameter for reducing the number of files returned, if None all files are returned
 
     :return: returns a list of filenames
@@ -32,19 +36,25 @@ def get_files(path, inst='gel', filt='', num=None):
 
     path = os.path.join(path, inst, '*.wav')
 
-    files = glob.glob(path)
-    files_filtered = [file for file in files if filt in file]
 
-    num_files = len(files_filtered)
+    files = glob.glob(path) # get all files for specified instrument
+    files_filtered = [f for f in files if filt in f] # collect all files that contain filt
+
+    files_ignore = [f for f in files_filtered if not any(tag in f for tag in ignore)]
+
+    if rand:
+        random.shuffle(files_ignore)
+
+    num_files = len(files_ignore)
 
     # optional reduction if num is specified
     if num is not None and num < num_files:
-        files_filtered = files_filtered[:num]
+        files_ignore = files_ignore[:num]
         num_files = num
     
     print(str(num_files) + ' Files from folder ' + inst + ' with filter: ' + filt)
 
-    return files_filtered
+    return files_ignore
 
 def get_label(filename):
     """Get label from full filename
@@ -86,8 +96,9 @@ def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, 
 if __name__ == "__main__":
     IRMAS_PATH = 'C:\\Users\\thoma\\Documents\\_STUDIUM\\5. Semester\\Fachvertiefung Software\\IRMAS-TrainingData'
 
-    filenames = get_files(IRMAS_PATH, inst='cel')
+    filenames = get_files(IRMAS_PATH, inst='cel', rand=True, num=5)
     
-    print(get_label(filenames[0]))
+    print([os.path.basename(f) for f in filenames])
+    print(len(filenames))
 
     
