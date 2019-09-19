@@ -25,7 +25,7 @@ instruments = ['cel', 'cla', 'flu', 'gac',
 num_files_per_inst = 3  # if none, all existing files are taken
 rand = False
 filt = ''
-ignore = []
+ignore = ['jaz_blu', 'pop_roc']
 
 
 filenames = []
@@ -49,7 +49,7 @@ winlen_samp = round(winstep*samplerate)  # window step in samples
 nfft = calculate_nfft(samplerate, winlen=winlen)
 
 # SLICE
-slice_len = 512
+slice_len = 1048
 
 # SEQUENCE
 seqlen = 0  # sequence length, relevant for extracting features with sequencial information
@@ -57,7 +57,7 @@ seqlen = 0  # sequence length, relevant for extracting features with sequencial 
 
 # OUTPUT
 outputfile = os.path.join(os.path.abspath(
-    __file__), '..', '..', 'tables', 'testfeatures_domain.csv')
+    __file__), '..', '..', 'tables', 'testfeatures_slice.csv')
 # ---------------------------------------------------------------------------------------------
 
 # Features
@@ -289,7 +289,9 @@ def get_slices(slice_len=512):
                          suffix='Complete', length=50)
 
     for feature in features:
-        feature /= np.max(np.abs(feature))
+        feature_max = np.max(np.abs(feature))
+        if feature_max != 0:
+            feature /= feature_max
 
     return features, labels
 
