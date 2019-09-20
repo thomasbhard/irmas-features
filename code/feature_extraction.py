@@ -52,12 +52,25 @@ nfft = calculate_nfft(samplerate, winlen=winlen)
 slice_len = 1048
 
 # SEQUENCE
-seqlen = 0  # sequence length, relevant for extracting features with sequencial information
+seq_len = 0  # sequence length, relevant for extracting features with sequencial information
 # ---------------------------------------------------------------------------------------------
 
 # OUTPUT
+# Auto name
+outfilebase = time.strftime("%Y%m%d-%H%M%S", time.gmtime(time.time()))
+if mode is 'domain':
+    outfilebase += '-domain-' + str(winlen).replace('.', '_')
+elif mode is 'slice':
+    outfilebase += '-slice-' + str(slice_len)
+elif mode is 'sequence':
+    outfilebase += '-sequence-' + str(seq_len)
+
+outfilebase += '.csv'
+
+# for manual name add outfilebase = 'name-for-table.csv'
+
 outputfile = os.path.join(os.path.abspath(
-    __file__), '..', '..', 'tables', 'testfeatures_slice.csv')
+    __file__), '..', '..', 'tables', outfilebase)
 # ---------------------------------------------------------------------------------------------
 
 # Features
@@ -75,7 +88,7 @@ def collect_settings():
     print('Collecting settings...')
 
     abspath = os.path.abspath(outputfile)
-    conf_file = os.path.splitext(abspath)[0] + '_config.json'
+    conf_file = os.path.splitext(abspath)[0] + '-config.json'
 
     data = {}
     data['irmas_path'] = irmas_path
@@ -91,7 +104,7 @@ def collect_settings():
     data['winlen_samp'] = winlen_samp
     data['nfft'] = nfft
     data['slice_len'] = slice_len
-    data['seqlen'] = seqlen
+    data['seq_len'] = seq_len
     data['outputfile'] = outputfile
 
     with open(conf_file, 'w') as fp:
@@ -336,8 +349,9 @@ if __name__ == "__main__":
     elif mode is 'slice':
         df = create_dataframe_slice()
     elif mode is 'sequence':
-        print('Not implemented yet!')
+        print('Sequence not implemented yet!')
 
     print('Saving csv...')
     df.to_csv(outputfile)
     collect_settings()
+
